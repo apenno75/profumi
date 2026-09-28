@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>La mia collezione di profumi</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8C%B8%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Jost:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --color-bg:#F7F1F3;
+    --color-surface:#FFFFFF;
+    --color-ink:#2A2130;
+    --color-ink-soft:#7A6A76;
+    --color-wine:#6E1E3A;
+    --color-wine-dark:#4F1529;
+    --color-rose:#E7C9D2;
+    --color-rose-soft:#F3E4E9;
+    --color-gold:#B08D4F;
+    --color-border:#E8DDE1;
+    --font-display:'Cormorant Garamond', serif;
+    --font-body:'Jost', sans-serif;
+    --radius:5px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--color-bg);
+    color:var(--color-ink);
+    font-family:var(--font-body);
+    line-height:1.5;
+    min-height:100vh;
+  }
+  a{color:inherit;}
+  button{font-family:inherit;cursor:pointer;}
+  ::selection{background:var(--color-rose);}
+
+  /* ---------- Header ---------- */
+  header{
+    position:sticky;top:0;z-index:20;
+    background:rgba(247,241,243,0.92);
+    backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--color-border);
+    padding:1.1rem 1.5rem;
+    display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  }
+  .brand{display:flex;flex-direction:column;}
+  .brand h1{
+    font-family:var(--font-display);
+    font-style:italic;
+    font-weight:600;
+    font-size:1.9rem;
+    margin:0;
+    color:var(--color-wine-dark);
+    letter-spacing:0.01em;
+  }
+  .brand .count{font-size:0.85rem;color:var(--color-ink-soft);margin-top:0.15rem;}
+  .btn{
+    border:none;border-radius:999px;
+    padding:0.65rem 1.3rem;
+    font-size:0.92rem;font-weight:500;
+    display:inline-flex;align-items:center;gap:0.5rem;
+    transition:transform .15s ease, box-shadow .15s ease, background .15s ease;
+  }
+  .btn-primary{background:var(--color-wine);color:#fff;}
+  .btn-primary:hover{background:var(--color-wine-dark);}
+  .btn-ghost{background:transparent;color:var(--color-wine-dark);border:1px solid var(--color-border);}
+  .btn-ghost:hover{border-color:var(--color-wine);}
+  .btn-icon{padding:0.55rem;border-radius:50%;background:transparent;color:var(--color-ink-soft);}
+  .btn-icon:hover{background:var(--color-rose-soft);color:var(--color-wine-dark);}
+  .btn:disabled{opacity:0.55;cursor:not-allowed;}
+
+  /* ---------- Toolbar ---------- */
+  .toolbar{max-width:1100px;margin:1.4rem auto 0;padding:0 1.5rem;}
+  .search-wrap{position:relative;max-width:360px;}
+  .search-wrap input{
+    width:100%;padding:0.6rem 0.9rem 0.6rem 2.3rem;
+    border:1px solid var(--color-border);border-radius:999px;
+    background:var(--color-surface);
+    font-family:inherit;font-size:0.92rem;color:var(--color-ink);
+  }
+  .search-wrap input:focus{outline:2px solid var(--color-rose);outline-offset:1px;}
+  .search-wrap svg{position:absolute;left:0.8rem;top:50%;transform:translateY(-50%);opacity:0.5;}
+
+  /* ---------- Grid & cards ---------- */
+  main{max-width:1100px;margin:0 auto;padding:1.4rem 1.5rem 4rem;}
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill, minmax(230px, 1fr));
+    gap:1.4rem;
+    margin-top:1.2rem;
+  }
+  .card{
+    background:var(--color-surface);
+    border:1px solid var(--color-border);
+    border-radius:var(--radius);
+    overflow:hidden;
+    display:flex;flex-direction:column;
+    transition:box-shadow .18s ease, transform .18s ease;
+  }
+  .card:hover{box-shadow:0 10px 24px -14px rgba(78,25,45,0.35);transform:translateY(-2px);}
+  .card-photo{
+    aspect-ratio:4/5;width:100%;
+    background:linear-gradient(160deg, var(--color-rose-soft), #fff);
+    display:flex;align-items:center;justify-content:center;
+    overflow:hidden;position:relative;
+  }
+  .card-photo img{width:100%;height:100%;object-fit:cover;display:block;}
+  .card-photo svg{opacity:0.35;width:46px;height:46px;}
+  .card-body{padding:0.95rem 1.05rem 1.05rem;display:flex;flex-direction:column;gap:0.55rem;flex:1;}
+  .card-brand{font-family:var(--font-display);font-style:italic;font-weight:600;font-size:1.28rem;color:var(--color-wine-dark);line-height:1.15;}
+  .card-name{font-size:0.95rem;color:var(--color-ink);margin-top:-0.35rem;}
+  .card-price{font-size:0.85rem;color:var(--color-ink-soft);}
+  .card-price b{color:var(--color-ink);font-weight:600;}
+  .ratings{display:flex;flex-direction:column;gap:0.25rem;margin-top:0.1rem;}
+  .rating-row{display:flex;align-items:center;gap:0.5rem;font-size:0.78rem;color:var(--color-ink-soft);}
+  .rating-row .label{min-width:80px;}
+  .stars{display:inline-flex;gap:1px;}
+  .stars svg{width:14px;height:14px;}
+  .star-filled{fill:var(--color-gold);}
+  .star-empty{fill:none;stroke:var(--color-gold);stroke-width:1.4;}
+  .card-note{
+    font-size:0.83rem;color:var(--color-ink-soft);font-style:italic;
+    display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+    min-height:1.2em;
+  }
+  .card-actions{
+    margin-top:auto;padding-top:0.7rem;border-top:1px solid var(--color-border);
+    display:flex;justify-content:flex-end;gap:0.3rem;
+  }
+
+  /* ---------- Empty state ---------- */
+  .empty{
+    text-align:center;padding:4.5rem 1rem;color:var(--color-ink-soft);
+  }
+  .empty svg{width:56px;height:56px;opacity:0.35;margin-bottom:1rem;}
+  .empty h2{font-family:var(--font-display);font-style:italic;color:var(--color-wine-dark);font-weight:600;font-size:1.5rem;margin:0 0 0.4rem;}
+
+  /* ---------- Modal ---------- */
+  .overlay{
+    position:fixed;inset:0;background:rgba(42,33,48,0.45);
+    display:none;align-items:flex-start;justify-content:center;
+    padding:3vh 1rem;overflow-y:auto;z-index:50;
+  }
+  .overlay.open{display:flex;}
+  .modal{
+    background:var(--color-surface);border-radius:8px;
+    width:100%;max-width:460px;padding:1.6rem 1.6rem 1.8rem;
+    box-shadow:0 30px 60px -20px rgba(42,33,48,0.4);
+  }
+  .modal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.1rem;}
+  .modal-head h2{font-family:var(--font-display);font-style:italic;font-weight:600;font-size:1.5rem;margin:0;color:var(--color-wine-dark);}
+  .field{margin-bottom:1rem;}
+  .field label{display:block;font-size:0.8rem;color:var(--color-ink-soft);margin-bottom:0.3rem;}
+  .field input[type=text], .field input[type=number], .field textarea{
+    width:100%;padding:0.6rem 0.7rem;border:1px solid var(--color-border);border-radius:4px;
+    font-family:inherit;font-size:0.92rem;color:var(--color-ink);background:#fdfbfc;
+  }
+  .field input:focus, .field textarea:focus{outline:2px solid var(--color-rose);outline-offset:0;border-color:var(--color-wine);}
+  .field textarea{resize:vertical;min-height:70px;}
+  .row-2{display:grid;grid-template-columns:1fr 1fr;gap:0.8rem;}
+  .photo-field{display:flex;align-items:center;gap:1rem;margin-bottom:1.1rem;}
+  .photo-preview{
+    width:78px;height:78px;border-radius:6px;background:var(--color-rose-soft);
+    display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;border:1px solid var(--color-border);
+  }
+  .photo-preview img{width:100%;height:100%;object-fit:cover;}
+  .photo-preview svg{width:26px;height:26px;opacity:0.4;}
+  .star-picker{display:inline-flex;gap:3px;}
+  .star-picker button{background:none;border:none;padding:2px;line-height:0;}
+  .star-picker svg{width:22px;height:22px;}
+  .modal-footer{display:flex;justify-content:flex-end;gap:0.6rem;margin-top:1.3rem;}
+  .hint{font-size:0.74rem;color:var(--color-ink-soft);margin-top:0.3rem;}
+
+  /* ---------- Toast ---------- */
+  #toast{
+    position:fixed;bottom:1.4rem;left:50%;transform:translateX(-50%) translateY(20px);
+    background:var(--color-ink);color:#fff;padding:0.7rem 1.2rem;border-radius:999px;
+    font-size:0.85rem;opacity:0;pointer-events:none;transition:opacity .25s ease, transform .25s ease;z-index:100;
+    max-width:90vw;text-align:center;
+  }
+  #toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+  #toast.error{background:var(--color-wine);}
+
+  @media (max-width:480px){
+    .row-2{grid-template-columns:1fr;}
+    .brand h1{font-size:1.6rem;}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <h1>La mia collezione</h1>
+    <span class="count" id="count">Caricamento…</span>
+  </div>
+  <button class="btn btn-primary" id="btnAdd">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    Aggiungi profumo
+  </button>
+</header>
+
+<div class="toolbar">
+  <div class="search-wrap">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input type="text" id="searchInput" placeholder="Cerca per marca o nome…">
+  </div>
+</div>
+
+<main>
+  <div class="grid" id="grid"></div>
+  <div class="empty" id="emptyState" style="display:none;">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M9 2h6M10 2v3.2c0 .5-.2 1-.6 1.3L7 8.8c-.9.8-1.4 2-1.4 3.2v6c0 1.7 1.3 3 3 3h6.8c1.7 0 3-1.3 3-3v-6c0-1.2-.5-2.4-1.4-3.2l-2.4-2.3c-.4-.3-.6-.8-.6-1.3V2"/></svg>
+    <h2>La tua collezione è vuota</h2>
+    <p>Aggiungi il tuo primo profumo per iniziare.</p>
+  </div>
+</main>
+
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <div class="modal-head">
+      <h2 id="modalTitle">Nuovo profumo</h2>
+      <button class="btn btn-icon" id="btnClose">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+
+    <form id="perfumeForm">
+      <div class="photo-field">
+        <div class="photo-preview" id="photoPreview">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7l1.5-2.5h5L16 7"/><circle cx="12" cy="13.5" r="3.2"/></svg>
+        </div>
+        <div>
+          <button type="button" class="btn btn-ghost" id="btnChoosePhoto">Scegli foto</button>
+          <div class="hint">Verrà ridotta automaticamente sotto i 300 KB</div>
+        </div>
+        <input type="file" id="fotoInput" accept="image/*" capture="environment" hidden>
+      </div>
+
+      <div class="row-2">
+        <div class="field">
+          <label for="marca">Marca *</label>
+          <input type="text" id="marca" required>
+        </div>
+        <div class="field">
+          <label for="nome">Nome *</label>
+          <input type="text" id="nome" required>
+        </div>
+      </div>
+
+      <div class="row-2">
+        <div class="field">
+          <label for="costo">Prezzo indicativo (€)</label>
+          <input type="number" id="costo" step="0.01" min="0">
+        </div>
+        <div class="field">
+          <label for="ml">Per quanti ml</label>
+          <input type="number" id="ml" step="1" min="0">
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Persistenza</label>
+        <div class="star-picker" id="pickerPersistenza" data-value="0"></div>
+      </div>
+
+      <div class="field">
+        <label>Bontà della fragranza</label>
+        <div class="star-picker" id="pickerQualita" data-value="0"></div>
+      </div>
+
+      <div class="field">
+        <label for="note">Note</label>
+        <textarea id="note" placeholder="Impressioni, occasioni d'uso, note olfattive…"></textarea>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-ghost" id="btnCancel">Annulla</button>
+        <button type="submit" class="btn btn-primary" id="btnSave">Salva profumo</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+(function(){
+  "use strict";
+
+  // ---------- Config ----------
+  const SUPABASE_URL = 'https://erukzvrtjnvyzjvfuirn.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_FDhQ03affjzeyhCHuoKulg_Rp7PdyLM';
+  const TABLE = 'profumi';
+  const BUCKET = 'foto-profumi';
+  const MAX_PHOTO_KB = 300;
+
+  if (!window.supabase) {
+    document.body.innerHTML = '<p style="padding:2rem;font-family:sans-serif;">Impossibile caricare la libreria Supabase. Controlla la connessione a internet.</p>';
+    return;
+  }
+  const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  // ---------- State ----------
+  let allPerfumi = [];
+  let editingId = null;
+  let existingFotoUrl = null;
+  let newPhotoFile = null;
+
+  // ---------- DOM refs ----------
+  const grid = document.getElementById('grid');
+  const emptyState = document.getElementById('emptyState');
+  const countEl = document.getElementById('count');
+  const overlay = document.getElementById('overlay');
+  const form = document.getElementById('perfumeForm');
+  const modalTitle = document.getElementById('modalTitle');
+  const btnSave = document.getElementById('btnSave');
+  const photoPreview = document.getElementById('photoPreview');
+  const fotoInput = document.getElementById('fotoInput');
+  const searchInput = document.getElementById('searchInput');
+  const toastEl = document.getElementById('toast');
+
+  // ---------- SVG helpers ----------
+  function starSVG(filled){
+    return filled
+      ? '<svg viewBox="0 0 24 24" class="star-filled"><polygon points="12 2.5 15.1 9 22.3 9.9 17 14.9 18.4 22.1 12 18.6 5.6 22.1 7 14.9 1.7 9.9 8.9 9"/></svg>'
+      : '<svg viewBox="0 0 24 24" class="star-empty"><polygon points="12 2.5 15.1 9 22.3 9.9 17 14.9 18.4 22.1 12 18.6 5.6 22.1 7 14.9 1.7 9.9 8.9 9"/></svg>';
+  }
+  function starsReadonly(value){
+    let html = '<span class="stars">';
+    for (let i = 1; i <= 5; i++) html += starSVG(i <= (value||0));
+    return html + '</span>';
+  }
+  function bottleIconEmpty(){
+    return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M9 2h6M10 2v3.2c0 .5-.2 1-.6 1.3L7 8.8c-.9.8-1.4 2-1.4 3.2v6c0 1.7 1.3 3 3 3h6.8c1.7 0 3-1.3 3-3v-6c0-1.2-.5-2.4-1.4-3.2l-2.4-2.3c-.4-.3-.6-.8-.6-1.3V2"/></svg>';
+  }
+
+  // ---------- Toast ----------
+  let toastTimer = null;
+  function showToast(msg, isError){
+    toastEl.textContent = msg;
+    toastEl.className = isError ? 'error show' : 'show';
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(()=> toastEl.classList.remove('show'), 3200);
+  }
+
+  // ---------- Star picker (interactive) ----------
+  function buildPicker(container){
+    container.innerHTML = '';
+    for (let i = 1; i <= 5; i++){
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.dataset.value = i;
+      btn.innerHTML = starSVG(false);
+      btn.addEventListener('click', () => {
+        container.dataset.value = i;
+        paintPicker(container);
+      });
+      container.appendChild(btn);
+    }
+  }
+  function paintPicker(container){
+    const val = parseInt(container.dataset.value || '0', 10);
+    [...container.children].forEach((btn, idx) => {
+      btn.innerHTML = starSVG(idx + 1 <= val);
+    });
+  }
+  const pickerPersistenza = document.getElementById('pickerPersistenza');
+  const pickerQualita = document.getElementById('pickerQualita');
+  buildPicker(pickerPersistenza);
+  buildPicker(pickerQualita);
+
+  // ---------- Load & render ----------
+  async function loadPerfumi(){
+    countEl.textContent = 'Caricamento…';
+    const { data, error } = await sb.from(TABLE).select('*').order('marca', { ascending: true }).order('nome', { ascending: true });
+    if (error){
+      showToast('Errore nel caricamento: ' + error.message, true);
+      countEl.textContent = 'Errore di caricamento';
+      return;
+    }
+    allPerfumi = data || [];
+    renderList(allPerfumi);
+  }
+
+  function renderList(list){
+    countEl.textContent = list.length === 1 ? '1 profumo' : list.length + ' profumi';
+    grid.innerHTML = '';
+    if (list.length === 0){
+      emptyState.style.display = allPerfumi.length === 0 ? 'block' : 'block';
+      emptyState.querySelector('p').textContent = allPerfumi.length === 0
+        ? "Aggiungi il tuo primo profumo per iniziare."
+        : "Nessun profumo corrisponde alla ricerca.";
+      return;
+    }
+    emptyState.style.display = 'none';
+    list.forEach(p => grid.appendChild(renderCard(p)));
+  }
+
+  function renderCard(p){
+    const card = document.createElement('div');
+    card.className = 'card';
+    const photoHTML = p.foto_url
+      ? `<img src="${escapeAttr(p.foto_url)}" alt="${escapeAttr(p.marca + ' ' + p.nome)}">`
+      : bottleIconEmpty();
+    const priceHTML = (p.costo != null || p.ml != null)
+      ? `<div class="card-price">${p.costo != null ? '<b>€ ' + Number(p.costo).toFixed(2) + '</b>' : ''}${p.ml != null ? ' per ' + p.ml + ' ml' : ''}</div>`
+      : '';
+    card.innerHTML = `
+      <div class="card-photo">${photoHTML}</div>
+      <div class="card-body">
+        <div class="card-brand">${escapeHTML(p.marca)}</div>
+        <div class="card-name">${escapeHTML(p.nome)}</div>
+        ${priceHTML}
+        <div class="ratings">
+          <div class="rating-row"><span class="label">Persistenza</span>${starsReadonly(p.persistenza)}</div>
+          <div class="rating-row"><span class="label">Fragranza</span>${starsReadonly(p.qualita)}</div>
+        </div>
+        ${p.note ? `<div class="card-note">${escapeHTML(p.note)}</div>` : ''}
+        <div class="card-actions">
+          <button class="btn btn-icon" data-action="edit" title="Modifica">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+          </button>
+          <button class="btn btn-icon" data-action="delete" title="Elimina">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+          </button>
+        </div>
+      </div>`;
+    card.querySelector('[data-action="edit"]').addEventListener('click', () => openModal('edit', p));
+    card.querySelector('[data-action="delete"]').addEventListener('click', () => handleDelete(p));
+    return card;
+  }
+
+  function escapeHTML(str){
+    return (str ?? '').toString().replace(/[&<>"']/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s]));
+  }
+  function escapeAttr(str){ return escapeHTML(str); }
+
+  // ---------- Search ----------
+  searchInput.addEventListener('input', () => {
+    const q = searchInput.value.trim().toLowerCase();
+    if (!q){ renderList(allPerfumi); return; }
+    renderList(allPerfumi.filter(p =>
+      (p.marca||'').toLowerCase().includes(q) || (p.nome||'').toLowerCase().includes(q)
+    ));
+  });
+
+  // ---------- Modal open/close ----------
+  function openModal(mode, p){
+    editingId = mode === 'edit' ? p.id : null;
+    existingFotoUrl = mode === 'edit' ? p.foto_url : null;
+    newPhotoFile = null;
+    modalTitle.textContent = mode === 'edit' ? 'Modifica profumo' : 'Nuovo profumo';
+    form.reset();
+    document.getElementById('marca').value = p?.marca || '';
+    document.getElementById('nome').value = p?.nome || '';
+    document.getElementById('costo').value = p?.costo ?? '';
+    document.getElementById('ml').value = p?.ml ?? '';
+    document.getElementById('note').value = p?.note || '';
+    pickerPersistenza.dataset.value = p?.persistenza || 0;
+    pickerQualita.dataset.value = p?.qualita || 0;
+    paintPicker(pickerPersistenza);
+    paintPicker(pickerQualita);
+    photoPreview.innerHTML = p?.foto_url
+      ? `<img src="${escapeAttr(p.foto_url)}">`
+      : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7l1.5-2.5h5L16 7"/><circle cx="12" cy="13.5" r="3.2"/></svg>';
+    overlay.classList.add('open');
+  }
+  function closeModal(){
+    overlay.classList.remove('open');
+    editingId = null; existingFotoUrl = null; newPhotoFile = null;
+  }
+  document.getElementById('btnAdd').addEventListener('click', () => openModal('new', null));
+  document.getElementById('btnClose').addEventListener('click', closeModal);
+  document.getElementById('btnCancel').addEventListener('click', closeModal);
+  overlay.addEventListener('click', (e) => { if (e.target === overlay) closeModal(); });
+
+  // ---------- Photo selection + resize ----------
+  document.getElementById('btnChoosePhoto').addEventListener('click', () => fotoInput.click());
+  fotoInput.addEventListener('change', () => {
+    const file = fotoInput.files[0];
+    if (!file) return;
+    newPhotoFile = file;
+    const reader = new FileReader();
+    reader.onload = e => { photoPreview.innerHTML = `<img src="${e.target.result}">`; };
+    reader.readAsDataURL(file);
+  });
+
+  function loadImage(file){
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => resolve(img);
+      img.onerror = reject;
+      img.src = URL.createObjectURL(file);
+    });
+  }
+  function canvasToBlob(canvas, quality){
+    return new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', quality));
+  }
+  async function resizeImage(file, maxKB){
+    const img = await loadImage(file);
+    let width = img.width, height = img.height;
+    const maxDim = 1600;
+    if (width > maxDim || height > maxDim){
+      const scale = maxDim / Math.max(width, height);
+      width = Math.round(width * scale);
+      height = Math.round(height * scale);
+    }
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = width; canvas.height = height;
+    ctx.drawImage(img, 0, 0, width, height);
+
+    let quality = 0.88;
+    let blob = await canvasToBlob(canvas, quality);
+    while (blob.size > maxKB * 1024 && quality > 0.15){
+      quality -= 0.1;
+      blob = await canvasToBlob(canvas, quality);
+    }
+    while (blob.size > maxKB * 1024 && canvas.width > 250 && canvas.height > 250){
+      canvas.width = Math.round(canvas.width * 0.85);
+      canvas.height = Math.round(canvas.height * 0.85);
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      blob = await canvasToBlob(canvas, quality);
+    }
+    URL.revokeObjectURL(img.src);
+    return blob;
+  }
+
+  async function uploadPhoto(file){
+    const blob = await resizeImage(file, MAX_PHOTO_KB);
+    const fileName = (crypto.randomUUID ? crypto.randomUUID() : Date.now() + '-' + Math.random().toString(36).slice(2)) + '.jpg';
+    const { error: upErr } = await sb.storage.from(BUCKET).upload(fileName, blob, {
+      contentType: 'image/jpeg', upsert: false
+    });
+    if (upErr) throw upErr;
+    const { data } = sb.storage.from(BUCKET).getPublicUrl(fileName);
+    return data.publicUrl;
+  }
+
+  // ---------- Save (insert / update) ----------
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const marca = document.getElementById('marca').value.trim();
+    const nome = document.getElementById('nome').value.trim();
+    if (!marca || !nome){ showToast('Marca e nome sono obbligatori', true); return; }
+
+    btnSave.disabled = true;
+    btnSave.textContent = 'Salvataggio…';
+    try {
+      let fotoUrl = existingFotoUrl;
+      if (newPhotoFile){
+        fotoUrl = await uploadPhoto(newPhotoFile);
+      }
+      const record = {
+        marca, nome,
+        costo: document.getElementById('costo').value === '' ? null : parseFloat(document.getElementById('costo').value),
+        ml: document.getElementById('ml').value === '' ? null : parseInt(document.getElementById('ml').value, 10),
+        persistenza: parseInt(pickerPersistenza.dataset.value || '0', 10) || null,
+        qualita: parseInt(pickerQualita.dataset.value || '0', 10) || null,
+        note: document.getElementById('note').value.trim() || null,
+        foto_url: fotoUrl
+      };
+      if (editingId){
+        const { error } = await sb.from(TABLE).update(record).eq('id', editingId);
+        if (error) throw error;
+        showToast('Profumo aggiornato');
+      } else {
+        const { error } = await sb.from(TABLE).insert(record);
+        if (error) throw error;
+        showToast('Profumo aggiunto');
+      }
+      closeModal();
+      await loadPerfumi();
+    } catch (err){
+      showToast('Errore: ' + err.message, true);
+    } finally {
+      btnSave.disabled = false;
+      btnSave.textContent = 'Salva profumo';
+    }
+  });
+
+  // ---------- Delete ----------
+  async function handleDelete(p){
+    if (!confirm(`Eliminare "${p.marca} — ${p.nome}" dalla collezione?`)) return;
+    const { error } = await sb.from(TABLE).delete().eq('id', p.id);
+    if (error){ showToast('Errore nell\'eliminazione: ' + error.message, true); return; }
+    if (p.foto_url){
+      try {
+        const fileName = p.foto_url.split('/').pop();
+        await sb.storage.from(BUCKET).remove([fileName]);
+      } catch(_) { /* non bloccante */ }
+    }
+    showToast('Profumo eliminato');
+    await loadPerfumi();
+  }
+
+  // ---------- Init ----------
+  loadPerfumi();
+})();
+</script>
+</body>
+</html>
