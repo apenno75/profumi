@@ -112,6 +112,11 @@
   .card-body{padding:0.95rem 1.05rem 1.05rem;display:flex;flex-direction:column;gap:0.55rem;flex:1;}
   .card-brand{font-family:var(--font-display);font-style:italic;font-weight:600;font-size:1.28rem;color:var(--color-wine-dark);line-height:1.15;}
   .card-name{font-size:0.95rem;color:var(--color-ink);margin-top:-0.35rem;}
+  .tag{
+    align-self:flex-start;font-size:0.7rem;padding:0.2rem 0.6rem;
+    border:1px solid var(--color-gold);color:var(--color-wine-dark);
+    border-radius:999px;background:var(--color-rose-soft);
+  }
   .card-price{font-size:0.85rem;color:var(--color-ink-soft);}
   .card-price b{color:var(--color-ink);font-weight:600;}
   .ratings{display:flex;flex-direction:column;gap:0.25rem;margin-top:0.1rem;}
@@ -154,12 +159,13 @@
   .modal-head h2{font-family:var(--font-display);font-style:italic;font-weight:600;font-size:1.5rem;margin:0;color:var(--color-wine-dark);}
   .field{margin-bottom:1rem;}
   .field label{display:block;font-size:0.8rem;color:var(--color-ink-soft);margin-bottom:0.3rem;}
-  .field input[type=text], .field input[type=number], .field textarea{
+  .field input[type=text], .field input[type=number], .field select, .field textarea{
     width:100%;padding:0.6rem 0.7rem;border:1px solid var(--color-border);border-radius:4px;
     font-family:inherit;font-size:0.92rem;color:var(--color-ink);background:#fdfbfc;
   }
-  .field input:focus, .field textarea:focus{outline:2px solid var(--color-rose);outline-offset:0;border-color:var(--color-wine);}
+  .field input:focus, .field select:focus, .field textarea:focus{outline:2px solid var(--color-rose);outline-offset:0;border-color:var(--color-wine);}
   .field textarea{resize:vertical;min-height:70px;}
+  .field select{appearance:auto;}
   .row-2{display:grid;grid-template-columns:1fr 1fr;gap:0.8rem;}
   .photo-field{display:flex;align-items:center;gap:1rem;margin-bottom:1.1rem;}
   .photo-preview{
@@ -251,6 +257,12 @@
         </div>
       </div>
 
+      <div class="field">
+        <label for="tipologia">Tipologia</label>
+        <select id="tipologia"></select>
+        <div class="hint" id="tipologiaHint"></div>
+      </div>
+
       <div class="row-2">
         <div class="field">
           <label for="costo">Prezzo indicativo (€)</label>
@@ -298,6 +310,13 @@
   const TABLE = 'profumi';
   const BUCKET = 'foto-profumi';
   const MAX_PHOTO_KB = 300;
+  const TIPOLOGIE = [
+    { value: 'Eau de Senteur', label: 'Eau de Senteur (Acqua profumata)', hint: 'Concentrazione circa 1%, senza alcol: molto delicata, pensata per la pelle sensibile di neonati e bambini piccoli.' },
+    { value: 'Eau Fraîche', label: 'Eau Fraîche (Acqua rinfrescante)', hint: 'Concentrazione 1–3%: leggerissima e fresca, ideale per l\'estate o per rinfrescarsi più volte al giorno.' },
+    { value: 'Eau de Cologne', label: 'Eau de Cologne (Acqua di Colonia)(EdC)', hint: 'Concentrazione 2–5%: dura 1-2 ore, note agrumate ed erbacee; nasce come tonico rinfrescante o dopobarba.' },
+    { value: 'Eau de Toilette', label: 'Eau de Toilette (EdT)', hint: 'Concentrazione 5–15%: fragranza ariosa, dura circa mezza giornata (3-5 ore).' },
+    { value: 'Eau de Parfum', label: 'Eau de Parfum (EdP)', hint: 'Concentrazione 15–20%: intenso e persistente, resiste sulla pelle dalle 6 alle 8 ore.' }
+  ];
 
   if (!window.supabase) {
     document.body.innerHTML = '<p style="padding:2rem;font-family:sans-serif;">Impossibile caricare la libreria Supabase. Controlla la connessione a internet.</p>';
@@ -323,6 +342,25 @@
   const fotoInput = document.getElementById('fotoInput');
   const searchInput = document.getElementById('searchInput');
   const toastEl = document.getElementById('toast');
+  const tipologiaSelect = document.getElementById('tipologia');
+  const tipologiaHint = document.getElementById('tipologiaHint');
+
+  // ---------- Tipologia select ----------
+  (function buildTipologiaOptions(){
+    const blank = document.createElement('option');
+    blank.value = ''; blank.textContent = 'Non specificata';
+    tipologiaSelect.appendChild(blank);
+    TIPOLOGIE.forEach(t => {
+      const opt = document.createElement('option');
+      opt.value = t.value; opt.textContent = t.label;
+      tipologiaSelect.appendChild(opt);
+    });
+  })();
+  function updateTipologiaHint(){
+    const t = TIPOLOGIE.find(x => x.value === tipologiaSelect.value);
+    tipologiaHint.textContent = t ? t.hint : '';
+  }
+  tipologiaSelect.addEventListener('change', updateTipologiaHint);
 
   // ---------- SVG helpers ----------
   function starSVG(filled){
@@ -415,6 +453,7 @@
       <div class="card-body">
         <div class="card-brand">${escapeHTML(p.marca)}</div>
         <div class="card-name">${escapeHTML(p.nome)}</div>
+        ${p.tipologia ? `<span class="tag">${escapeHTML(p.tipologia)}</span>` : ''}
         ${priceHTML}
         <div class="ratings">
           <div class="rating-row"><span class="label">Persistenza</span>${starsReadonly(p.persistenza)}</div>
@@ -461,6 +500,8 @@
     document.getElementById('costo').value = p?.costo ?? '';
     document.getElementById('ml').value = p?.ml ?? '';
     document.getElementById('note').value = p?.note || '';
+    tipologiaSelect.value = p?.tipologia || '';
+    updateTipologiaHint();
     pickerPersistenza.dataset.value = p?.persistenza || 0;
     pickerQualita.dataset.value = p?.qualita || 0;
     paintPicker(pickerPersistenza);
@@ -558,6 +599,7 @@
       }
       const record = {
         marca, nome,
+        tipologia: tipologiaSelect.value || null,
         costo: document.getElementById('costo').value === '' ? null : parseFloat(document.getElementById('costo').value),
         ml: document.getElementById('ml').value === '' ? null : parseInt(document.getElementById('ml').value, 10),
         persistenza: parseInt(pickerPersistenza.dataset.value || '0', 10) || null,
