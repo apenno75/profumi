@@ -180,6 +180,22 @@
   .modal-footer{display:flex;justify-content:flex-end;gap:0.6rem;margin-top:1.3rem;}
   .hint{font-size:0.74rem;color:var(--color-ink-soft);margin-top:0.3rem;}
 
+  /* ---------- Livello profumo (boccetta) ---------- */
+  .level-field{display:flex;align-items:center;gap:1rem;}
+  .level-slider{
+    width:150px;flex-shrink:0;cursor:ns-resize;touch-action:none;user-select:none;-webkit-user-select:none;
+    border-radius:8px;outline:none;
+  }
+  .level-slider:focus-visible{outline:2px solid var(--color-rose);outline-offset:2px;}
+  .level-slider svg{display:block;width:100%;height:auto;overflow:visible;}
+  .lv-liquid,.lv-handle{transition:transform .18s ease;}
+  .level-slider.dragging .lv-liquid,.level-slider.dragging .lv-handle{transition:none;}
+  .lv-tick text{font-family:var(--font-body);font-size:10px;fill:var(--color-ink-soft);}
+  .lv-tick.active text{fill:var(--color-wine-dark);font-weight:600;}
+  .level-readout{display:flex;flex-direction:column;gap:0.2rem;}
+  .level-readout b{font-family:var(--font-display);font-style:italic;font-weight:600;font-size:1.5rem;color:var(--color-wine-dark);line-height:1.1;}
+  .level-readout span{font-size:0.78rem;color:var(--color-ink-soft);}
+
   /* ---------- Toast ---------- */
   #toast{
     position:fixed;bottom:1.4rem;left:50%;transform:translateX(-50%) translateY(20px);
@@ -282,6 +298,42 @@
       <div class="field">
         <label>Bontà della fragranza</label>
         <div class="star-picker" id="pickerQualita" data-value="0"></div>
+      </div>
+
+      <div class="field">
+        <label>Profumo rimasto</label>
+        <div class="level-field">
+          <div class="level-slider" id="levelSlider" role="slider" tabindex="0"
+               aria-label="Profumo rimasto" aria-valuemin="0" aria-valuemax="4" aria-valuenow="4">
+            <svg viewBox="0 0 200 180" aria-hidden="true">
+              <defs>
+                <clipPath id="lvClip"><path d="M78 24H102V44C102 48 106 50 112 52C136 58 146 70 146 90V150C146 164 136 174 122 174H58C44 174 34 164 34 150V90C34 70 44 58 68 52C74 50 78 48 78 44Z"/></clipPath>
+                <linearGradient id="lvGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0" stop-color="#C98AA0"/><stop offset="1" stop-color="#8B2A4B"/>
+                </linearGradient>
+              </defs>
+              <rect x="70" y="3" width="40" height="21" rx="4" fill="#B08D4F"/>
+              <path d="M78 24H102V44C102 48 106 50 112 52C136 58 146 70 146 90V150C146 164 136 174 122 174H58C44 174 34 164 34 150V90C34 70 44 58 68 52C74 50 78 48 78 44Z" fill="#fdfbfc"/>
+              <g clip-path="url(#lvClip)">
+                <g class="lv-liquid" id="lvLiquid">
+                  <rect x="20" y="62" width="140" height="200" fill="url(#lvGrad)"/>
+                  <rect x="20" y="62" width="140" height="3" fill="#fff" opacity="0.35"/>
+                </g>
+                <path d="M48 80C42 88 41 100 41 112" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity="0.45"/>
+              </g>
+              <path d="M78 24H102V44C102 48 106 50 112 52C136 58 146 70 146 90V150C146 164 136 174 122 174H58C44 174 34 164 34 150V90C34 70 44 58 68 52C74 50 78 48 78 44Z" fill="none" stroke="#4F1529" stroke-width="2.2" stroke-linejoin="round"/>
+              <g id="lvTicks"></g>
+              <g class="lv-handle" id="lvHandle">
+                <circle cx="90" cy="62" r="13" fill="#fff" stroke="#B08D4F" stroke-width="2.2"/>
+                <path d="M85 59.5L90 54.5L95 59.5M85 64.5L90 69.5L95 64.5" fill="none" stroke="#6E1E3A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </g>
+            </svg>
+          </div>
+          <div class="level-readout">
+            <b id="levelLabel">Pieno</b>
+            <span id="levelSub">4/4 · trascina la boccetta su e giù</span>
+          </div>
+        </div>
       </div>
 
       <div class="field">
@@ -412,6 +464,81 @@
   buildPicker(pickerPersistenza);
   buildPicker(pickerQualita);
 
+  // ---------- Livello profumo rimasto (boccetta) ----------
+  const LEVELS = [
+    { v: 0, tick: '0',   label: 'Finito',      sub: '0/4' },
+    { v: 1, tick: '1/4', label: 'Un quarto',   sub: '1/4' },
+    { v: 2, tick: '2/4', label: 'Metà',        sub: '2/4' },
+    { v: 3, tick: '3/4', label: 'Tre quarti',  sub: '3/4' },
+    { v: 4, tick: '4/4', label: 'Pieno',       sub: '4/4' }
+  ];
+  const LV_BOTTOM = 170, LV_TOP = 62, LV_RANGE = LV_BOTTOM - LV_TOP; // coordinate SVG
+  const levelSlider = document.getElementById('levelSlider');
+  const lvLiquid = document.getElementById('lvLiquid');
+  const lvHandle = document.getElementById('lvHandle');
+  const lvTicks = document.getElementById('lvTicks');
+  const levelLabel = document.getElementById('levelLabel');
+  const levelSub = document.getElementById('levelSub');
+  let currentLevel = 4;
+
+  LEVELS.forEach(l => {
+    const y = LV_BOTTOM - (l.v / 4) * LV_RANGE;
+    const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    g.setAttribute('class', 'lv-tick');
+    g.dataset.v = l.v;
+    g.innerHTML = `<line x1="150" y1="${y}" x2="158" y2="${y}" stroke="#7A6A76" stroke-width="1.5" stroke-linecap="round"/>` +
+                  `<text x="163" y="${y + 3.5}">${l.tick}</text>`;
+    lvTicks.appendChild(g);
+  });
+
+  function setLevel(v){
+    v = Math.max(0, Math.min(4, Math.round(v)));
+    currentLevel = v;
+    const offset = ((4 - v) / 4) * LV_RANGE;
+    lvLiquid.style.transform = `translateY(${offset}px)`;
+    lvHandle.style.transform = `translateY(${offset}px)`;
+    const l = LEVELS[v];
+    levelLabel.textContent = l.label;
+    levelSub.textContent = l.sub + ' · trascina la boccetta su e giù';
+    levelSlider.setAttribute('aria-valuenow', v);
+    levelSlider.setAttribute('aria-valuetext', l.label + ' (' + l.sub + ')');
+    [...lvTicks.children].forEach(g => g.classList.toggle('active', Number(g.dataset.v) === v));
+  }
+  function levelFromPointer(e){
+    const svg = levelSlider.querySelector('svg');
+    const r = svg.getBoundingClientRect();
+    const y = (e.clientY - r.top) * (180 / r.height);
+    return ((LV_BOTTOM - y) / LV_RANGE) * 4;
+  }
+  let lvDragging = false;
+  levelSlider.addEventListener('pointerdown', e => {
+    lvDragging = true;
+    levelSlider.classList.add('dragging');
+    levelSlider.setPointerCapture(e.pointerId);
+    levelSlider.focus({ preventScroll: true });
+    setLevel(levelFromPointer(e));
+    e.preventDefault();
+  });
+  levelSlider.addEventListener('pointermove', e => { if (lvDragging) setLevel(levelFromPointer(e)); });
+  const lvEnd = e => {
+    if (!lvDragging) return;
+    lvDragging = false;
+    levelSlider.classList.remove('dragging');
+    try { levelSlider.releasePointerCapture(e.pointerId); } catch(_) {}
+  };
+  levelSlider.addEventListener('pointerup', lvEnd);
+  levelSlider.addEventListener('pointercancel', lvEnd);
+  levelSlider.addEventListener('keydown', e => {
+    const k = e.key;
+    if (k === 'ArrowUp' || k === 'ArrowRight') setLevel(currentLevel + 1);
+    else if (k === 'ArrowDown' || k === 'ArrowLeft') setLevel(currentLevel - 1);
+    else if (k === 'Home') setLevel(0);
+    else if (k === 'End') setLevel(4);
+    else return;
+    e.preventDefault();
+  });
+  setLevel(4);
+
   // ---------- Load & render ----------
   async function loadPerfumi(){
     countEl.textContent = 'Caricamento…';
@@ -506,6 +633,7 @@
     pickerQualita.dataset.value = p?.qualita || 0;
     paintPicker(pickerPersistenza);
     paintPicker(pickerQualita);
+    setLevel(p?.rimanente ?? 4);
     photoPreview.innerHTML = p?.foto_url
       ? `<img src="${escapeAttr(p.foto_url)}">`
       : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7l1.5-2.5h5L16 7"/><circle cx="12" cy="13.5" r="3.2"/></svg>';
@@ -604,17 +732,23 @@
         ml: document.getElementById('ml').value === '' ? null : parseInt(document.getElementById('ml').value, 10),
         persistenza: parseInt(pickerPersistenza.dataset.value || '0', 10) || null,
         qualita: parseInt(pickerQualita.dataset.value || '0', 10) || null,
+        rimanente: currentLevel,
         note: document.getElementById('note').value.trim() || null,
         foto_url: fotoUrl
       };
-      if (editingId){
-        const { error } = await sb.from(TABLE).update(record).eq('id', editingId);
+      const run = rec => editingId
+        ? sb.from(TABLE).update(rec).eq('id', editingId)
+        : sb.from(TABLE).insert(rec);
+      let { error } = await run(record);
+      if (error && /rimanente/i.test(error.message || '')){
+        // La colonna 'rimanente' non esiste ancora nel database: salvo il resto
+        const { rimanente, ...senzaLivello } = record;
+        ({ error } = await run(senzaLivello));
         if (error) throw error;
-        showToast('Profumo aggiornato');
+        showToast('Salvato, ma il livello no: aggiungi la colonna "rimanente" su Supabase', true);
       } else {
-        const { error } = await sb.from(TABLE).insert(record);
         if (error) throw error;
-        showToast('Profumo aggiunto');
+        showToast(editingId ? 'Profumo aggiornato' : 'Profumo aggiunto');
       }
       closeModal();
       await loadPerfumi();
